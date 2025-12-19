@@ -1,0 +1,462 @@
+\documentclass[12pt, a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}   % Polices vectorielles (évite l'erreur microtype)
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{microtype} % Amélioration de la justification
+\usepackage{parskip}   % Gestion des espaces entre paragraphes (style Word/Moderne)
+\usepackage{float}     % Pour forcer le placement des figures avec [H]
+
+% Configuration de l'interligne
+\onehalfspacing        % Interligne 1.5 pour aérer le texte
+\geometry{hmargin=2.5cm,vmargin=2.5cm}
+
+% Configuration des couleurs
+\definecolor{primaryColor}{RGB}{0, 51, 102} % Bleu foncé EMSI
+\definecolor{secondaryColor}{RGB}{204, 0, 0} % Rouge accent
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Configuration des titres
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{primaryColor}}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{primaryColor}}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{primaryColor}}{\thesubsection}{1em}{}
+
+% Configuration des snippets de code
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegray},
+    keywordstyle=\color{primaryColor},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{secondaryColor},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    frame=single
+}
+\lstset{style=mystyle}
+
+% En-tête et pied de page
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\slshape \rightmark}
+\fancyhead[R]{\bfseries Digital Banking Application}
+\fancyfoot[C]{\thepage}
+
+\begin{document}
+\pagenumbering{alph}
+% Page de Garde
+\begin{titlepage}
+    \begin{center}
+        \vspace*{0.5cm}
+        \includegraphics[width=0.35\textwidth]{logo_emsi.png}\\[0.5cm]
+        {\Large École Marocaine des Sciences de l'Ingénieur}\\[1.5cm]
+        
+        {\Large \bfseries Rapport de Projet Académique}\\[0.5cm]
+        {\large Architecture des Composants d'Entreprise}\\[2cm]
+
+        \rule{\linewidth}{0.5mm} \\[0.4cm]
+        { \huge \bfseries \color{primaryColor} Mise en place d'une Architecture Microservices pour une Banque Digitale \\[0.4cm] }
+        \rule{\linewidth}{0.5mm} \\[2cm]
+
+        \begin{minipage}{0.4\textwidth}
+            \begin{flushleft} \large
+                \emph{Réalisé par :}\\
+                KHARRAZ Kenza\\
+                MOUGHIT Aya
+            \end{flushleft}
+        \end{minipage}
+        \begin{minipage}{0.4\textwidth}
+            \begin{flushright} \large
+                \emph{Encadré par :} \\
+                Pr. Abdelaziz Ettaoufik
+            \end{flushright}
+        \end{minipage}
+
+        \vfill
+        {\large Année Universitaire : 2025 - 2026}
+    \end{center}
+\end{titlepage}
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+% Remerciements
+\chapter*{Remerciements}
+Nous tenons à exprimer notre profonde gratitude à notre professeur, Monsieur Abdelaziz Ettaoufik, pour son encadrement, ses conseils précieux et son expertise technique tout au long de ce projet.
+Nous remercions également l'EMSI pour la qualité de l'enseignement dispensé.
+
+% Résumé
+\chapter*{Résumé}
+Ce projet présente la conception et la mise en œuvre d'une application bancaire numérique ("Digital Banking") fondée sur une architecture en microservices. L'objectif premier est de déployer une solution modulaire, scalable et résiliente, apte à gérer la complexité des opérations bancaires en temps réel. L'infrastructure technique s'appuie sur l'écosystème Spring Cloud (Eureka, Gateway, OpenFeign) pour l'orchestration des services, tandis que l'interface utilisateur, développée en React, garantit une expérience client fluide et réactive.
+
+\tableofcontents
+\listoffigures
+\newpage
+\pagenumbering{arabic}
+\chapter{Introduction Générale}
+
+\section{Contexte et Enjeux}
+Le secteur bancaire traverse une mutation profonde, caractérisée par la digitalisation intégrale des services financiers. Face à des usagers exigeant instantanéité, haute disponibilité et sécurité accrue, les architectures monolithiques traditionnelles atteignent leurs limites structurelles en matière d'évolutivité et de maintenance. Dès lors, la transition vers une architecture distribuée s'impose comme un impératif stratégique pour garantir l'agilité et la pérennité des systèmes d'information.
+
+\section{Présentation de l'Organisme (EMSI)}
+L'École Marocaine des Sciences de l'Ingénieur (EMSI) se distingue par son excellence académique et sa pédagogie axée sur l'innovation. Ce projet s'inscrit dans le cadre du module "Architecture des Composants d'Entreprise", dont la vocation est de permettre aux futurs ingénieurs de maîtriser les paradigmes logiciels avancés nécessaires à la conception de systèmes complexes.
+
+\section{Objectifs du Projet}
+Ce travail vise à atteindre les objectifs techniques et fonctionnels suivants :
+\begin{itemize}
+    \item \textbf{Architecture :} Concevoir un système découplé reposant sur le paradigme des Microservices pour assurer une scalabilité horizontale.
+    \item \textbf{Backend :} Implémenter des services RESTful robustes à l'aide du framework Spring Boot 3.
+    \item \textbf{Infrastructure :} Sécuriser et orchestrer les flux via une API Gateway centralisée et un service de découverte Eureka.
+    \item \textbf{Frontend :} Développer une interface utilisateur ergonomique, modulaire et moderne basée sur la bibliothèque React.
+\end{itemize}
+
+\section{Méthodologie de Travail}
+Pour mener à bien ce projet, nous avons adopté une démarche itérative inspirée de la méthode \textbf{Agile/Scrum}. Cette approche nous a permis de diviser le développement en plusieurs cycles (Sprints) :
+\begin{itemize}
+    \item \textbf{Sprint 1 (Conception \& Socle) :} Analyse des besoins, définition de l'architecture et mise en place des serveurs d'infrastructure (Eureka, Config).
+    \item \textbf{Sprint 2 (Développement Backend) :} Développement des microservices métier (\textit{Compte-service}, \textit{Transaction-service}) et tests unitaires.
+    \item \textbf{Sprint 3 (Frontend \& Intégration) :} Création de l'interface React, consommation des API via Axios et tests d'intégration globaux.
+\end{itemize}
+
+\chapter{Analyse et Conception}
+
+\section{Analyse des Besoins Fonctionnels}
+L'analyse fonctionnelle a permis d'identifier deux acteurs principaux : les Clients, utilisateurs finaux des services, et les Administrateurs, garants de la gestion du système.
+Le périmètre fonctionnel couvre les processus métier essentiels suivants :
+\begin{itemize}
+    \item \textbf{Gestion des Clients :} Création, modification et consultation des profils clients au sein de l'agence.
+    \item \textbf{Consultation des Comptes :} Accès à la liste exhaustive des comptes bancaires et visualisation détaillée de l'état de chacun (Solde, Type, Date).
+    \item \textbf{Opérations Financières :} Exécution sécurisée de transactions (virements de compte à compte, débits, crédits).
+    \item \textbf{Traçabilité :} Accès à l'historique complet des transactions pour un audit et un suivi précis.
+\end{itemize}
+
+\section{Analyse des Besoins Non-Fonctionnels}
+Au-delà des fonctionnalités métiers, le système doit répondre à des exigences de qualité logicielle :
+\begin{itemize}
+    \item \textbf{Disponibilité :} Le système doit rester opérationnel même en cas de défaillance d'un service (Gestion via Gateway et Discovery).
+    \item \textbf{Performance :} Les temps de réponse des API doivent être optimisés pour garantir une expérience fluide.
+    \item \textbf{Scalabilité :} L'architecture doit permettre l'ajout facile de nouvelles instances de services pour absorber une montée en charge.
+    \item \textbf{Maintenabilité :} Le code doit être modulaire et documenté pour faciliter les évolutions futures.
+\end{itemize}
+
+\section{Spécifications Techniques et Prérequis}
+Le tableau suivant récapitule les prérequis nécessaires au déploiement de la solution :
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Composant} & \textbf{Spécification / Version} \\ \hline
+Langage Backend & Java 17 (LTS) \\ \hline
+Framework Backend & Spring Boot 3.x \\ \hline
+Gestion de dépendances & Apache Maven 3.8+ \\ \hline
+Framework Frontend & React.js 18.x \\ \hline
+Base de données & H2 (In-Memory) / MySQL (Production) \\ \hline
+Serveur de Découverte & Spring Cloud Eureka \\ \hline
+\end{tabular}
+\caption{Spécifications techniques du projet}
+\end{table}
+
+\section{Modélisation UML}
+La phase de conception s'est appuyée sur le langage UML pour formaliser la structure et le comportement du système.
+
+\subsection{Diagramme de Classes}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\textwidth]{DiagrammeClasse.jpeg}
+    \caption{Diagramme de Classes de l'application Digital Banking}
+    \label{fig:class_diagram}
+\end{figure}
+
+Le diagramme de classes ci-dessus représente la structure statique du système, centrée sur le concept de \textbf{Compte}, modélisé comme une classe abstraite utilisant une stratégie d'héritage \textit{Single Table} pour ses spécialisations (\textit{CompteCourant} et \textit{CompteEpargne}). L'entité \textbf{Client} entretient une relation "un-à-plusieurs" avec ces comptes, permettant une gestion centralisée des produits bancaires. Parallèlement, chaque compte est associé à un historique de \textbf{Transaction}s immuables, garantissant une traçabilité complète des opérations financières (débits, crédits, virements) au sein d'une architecture orientée objet modulaire et extensible.
+
+
+
+\chapter{Réalisation et Implémentation}
+
+\section{Environnement Technique}
+La réalisation de ce projet s'appuie sur une stack technologique moderne et éprouvée :
+\begin{itemize}
+    \item \textbf{Backend :} Langage Java 17, Framework Spring Boot 3 et écosystème Spring Cloud.
+    \item \textbf{Frontend :} React.js pour la construction d'interfaces dynamiques, couplé à Axios pour la consommation d'API et Bootstrap pour le design system.
+    \item \textbf{Persistance :} Base de données H2 (in-memory) et Spring Data JPA pour l'abstraction ORM.
+    \item \textbf{Outils de Développement :} Maven pour la gestion des dépendances, IntelliJ IDEA comme IDE et Postman pour les tests d'API.
+\end{itemize}
+
+\subsection{Détail des Outils Utilisés}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{tool_java.png}
+    \caption{Java 17}
+\end{figure}
+\noindent\textbf{Java 17} : Socle de notre développement backend, choisi pour sa stabilité (LTS), ses performances et ses fonctionnalités modernes (Records, Switch expressions) qui facilitent l'écriture d'un code robuste et lisible.
+
+\newpage
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{tool_springboot.png}
+    \caption{Spring Boot}
+\end{figure}
+\noindent\textbf{Spring Boot} : Accélère le développement de nos microservices grâce à son approche "Convention over Configuration". Il fournit un serveur embarqué et simplifie la gestion des dépendances pour un déploiement rapide.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{tool_springcloud.png}
+    \caption{Spring Cloud}
+\end{figure}
+\noindent\textbf{Spring Cloud} : Fournit les briques essentielles pour gérer les interactions dans un système distribué complexe, notamment la découverte de services via Eureka et la configuration centralisée.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{tool_microservices.png}
+    \caption{Architecture Microservices}
+\end{figure}
+\noindent\textbf{Architecture Microservices} : Approche architecturale privilégiant le découpage de l'application en services autonomes et faiblement couplés, favorisant ainsi la scalabilité, la maintenance et l'évolutivité du système bancaire.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{tool_react.png}
+    \caption{React.js}
+\end{figure}
+\noindent\textbf{React.js} : Bibliothèque JavaScript utilisée pour créer une interface utilisateur dynamique et réactive. Son architecture à base de composants permet une modularité et une réutilisabilité maximale du code frontend.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{tool_jpa.png}
+    \caption{Spring Data JPA}
+\end{figure}
+\noindent\textbf{Spring Data JPA} : Simplifie la couche d'accès aux données en offrant une abstraction puissante sur JDBC et Hibernate, permettant de manipuler les bases de données via des interfaces Java standardisées.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{tool_h2.png}
+    \caption{H2 Database}
+\end{figure}
+\noindent\textbf{H2 Database} : Base de données relationnelle légère fonctionnant en mémoire. Elle est idéale pour le développement et les tests, permettant un prototypage rapide sans configuration d'infrastructure lourde.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{tool_maven.png}
+    \caption{Maven}
+\end{figure}
+\noindent\textbf{Maven} : Outil de gestion et d'automatisation de production. Il gère les dépendances, la compilation et le packaging de nos applications Java, assurant la cohérence du cycle de vie du logiciel.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{tool_postman.png}
+    \caption{Postman}
+\end{figure}
+\noindent\textbf{Postman} : Plateforme essentielle pour le développement d'API. Elle nous permet de tester, documenter et valider les endpoints de nos microservices, assurant ainsi la fiabilité des échanges de données avant l'intégration frontend.
+
+\section{Détail des Microservices et Implémentation}
+Cette section approfondit le rôle et l'implémentation technique des différents services composants notre architecture bancaire.
+
+\subsection{Discovery Service (Eureka Server)}
+Le service de découverte est le pivot central de la communication. Il permet l'auto-enregistrement des instances, évitant ainsi le codage en dur des adresses IP.
+\begin{lstlisting}[language=SQL, caption=Configuration Eureka Server]
+server:
+  port: 8761
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+\end{lstlisting}
+
+\subsection{Gateway Service (Routage)}
+La Gateway agit comme un point d'entrée unique. Elle centralise les requêtes et les redirige dynamiquement vers les microservices métier enregistrés sur Eureka.
+\begin{lstlisting}[language=SQL, caption=Configuration du routage Gateway]
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: compte-service
+          uri: lb://COMPTE-SERVICE
+          predicates:
+            - Path=/comptes/**
+\end{lstlisting}
+
+\subsection{Compte Service (Métier)}
+Responsable de la gestion des comptes et clients. Il expose des API REST pour la création de comptes et la gestion des profils.
+\begin{lstlisting}[language=java, caption=Interface AccountRepository]
+public interface AccountRepository extends JpaRepository<BankAccount, String> {
+    List<BankAccount> findByCustomerId(Long customerId);
+}
+\end{lstlisting}
+
+\subsection{Transaction Service (Opérations)}
+Ce service gère les transferts et opérations financières. Il utilise Spring Cloud OpenFeign pour interroger le service de compte de manière synchrone.
+\begin{lstlisting}[language=java, caption=Client Feign pour la communication inter-service]
+@FeignClient(name = "COMPTE-SERVICE")
+public interface AccountRestClient {
+    @GetMapping("/comptes/{id}")
+    BankAccountDTO getBankAccount(@PathVariable String id);
+}
+\end{lstlisting}
+
+\section{Communication et Orchestration}
+L'écosystème repose sur une communication REST pilotée par \textbf{OpenFeign}. Cette abstraction permet de traiter les appels distants comme des appels de méthodes Java locaux, garantissant une forte maintenabilité.
+
+\section{Gestion de la Persistance}
+Chaque microservice métier dispose de sa propre base de données \textbf{H2} (in-memory) pour isoler les données et respecter le paradigme microservices. L'ORM \textbf{Spring Data JPA} assure la transition fluide entre les objets métier et les tables relationnelles.
+
+\section{Architecture Globale de Déploiement}
+L'architecture modulaire mise en place se décompose en quatre services interconnectés :
+\begin{enumerate}
+    \item \textbf{Discovery Service (Eureka) :} Assure l'enregistrement et la découverte dynamique des instances de services.
+    \item \textbf{Gateway Service :} Agit comme point d'entrée unique, gérant le routage, l'authentification et le filtrage des requêtes.
+    \item \textbf{Compte Service :} Microservice métier dédié à la gestion du cycle de vie des comptes bancaires.
+    \item \textbf{Transaction Service :} Microservice métier responsable du traitement et de l'historisation des opérations financières.
+\end{enumerate}
+
+\section{Interfaces Utilisateur}
+Cette section présente les écrans principaux de l'application.
+
+\subsection{Liste des Comptes}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{image.png}
+    \caption{Interface de liste des comptes bancaires}
+    \label{fig:comptes_list}
+\end{figure}
+
+L'interface ci-dessus présente une vue synthétique de tous les comptes détenus par le client. Pour chaque compte, le système affiche son identifiant unique, son solde actuel en temps réel, sa date de création ainsi que son état  (ACTIF, SUSPENDU ou BLOQUÉ). Cette vue permet au client d'avoir une situation financière globale instantanée dès sa connexion.
+
+\subsection{Détails et Opérations}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{image_copy.png}
+    \caption{Vue détaillée d'un compte}
+    \label{fig:compte_detail}
+\end{figure}
+
+En sélectionnant un compte spécifique, l'utilisateur accède à la vue détaillée illustrée ci-dessus. Cette page reprend les informations essentielles du compte et sert de point de départ pour des actions contextuelles. Le design épuré met en avant le solde pour une lisibilité optimale.
+
+\subsection{Transactions}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{image_copy_2.png}
+    \caption{Historique des transactions}
+    \label{fig:transactions}
+\end{figure}
+
+La section "Transactions" ci-dessus liste l'historique complet des opérations financières (débits, crédits, virements) effectuées sur le compte. Les données sont présentées sous forme tabulaire, triées par ordre antéchronologique (les plus récentes en premier). Chaque ligne précise l'identifiant de la transaction, le montant impliqué, le type d'opération ainsi que la date d'exécution.
+
+\subsection{Formulaire de Virement}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{image_copy_3.png}
+    \caption{Formulaire d'exécution de virement}
+    \label{fig:virement}
+\end{figure}
+
+Pour effectuer un transfert d'argent, l'utilisateur utilise le formulaire dédié ci-dessus. Il doit spécifier le compte source (débiteur), l'identifiant du compte de destination (bénéficiaire) et le montant à transférer. Le système effectue des vérifications de cohérence (solde suffisant, existence du compte destinataire) avant de valider l'opération de manière atomique via le \texttt{Transaction Service}.
+
+\chapter{Guide d'Installation et d'Utilisation}
+Cette section fournit les instructions nécessaires pour déployer et exécuter l'application localement.
+
+\section{Prérequis}
+Avant de commencer, assurez-vous que les composants suivants sont installés sur votre machine :
+\begin{itemize}
+    \item \textbf{JDK 17} ou version ultérieure.
+    \item \textbf{Apache Maven 3.8+} pour le build backend.
+    \item \textbf{Node.js \& npm} pour le frontend React.
+    \item \textbf{Git} pour le contrôle de version.
+    \item Un IDE (IntelliJ IDEA, VS Code ou Eclipse).
+\end{itemize}
+
+\section{Procédure de Lancement}
+L'architecture microservices impose un ordre de démarrage précis pour garantir la bonne découverte des services.
+
+\subsection{Étape 1 : Le Discovery Service}
+Démarrez le projet \texttt{discovery-service}. Attendez que la console affiche que le serveur est prêt sur le port 8761.
+\begin{lstlisting}[language=SQL]
+mvn spring-boot:run
+\end{lstlisting}
+
+\subsection{Étape 2 : Les Microservices Métier}
+Lancez simultanément \texttt{compte-service} et \texttt{transaction-service}. Ils s'enregistreront automatiquement sur Eureka.
+
+\subsection{Étape 3 : La Gateway}
+Démarrez \texttt{gateway-service}. C'est par ce port (généralement 8888 ou 9999) que transiteront toutes les requêtes frontend.
+
+\subsection{Étape 4 : Le Frontend React}
+Accédez au dossier \texttt{frontend-react}, installez les dépendances puis lancez le serveur de développement :
+\begin{lstlisting}[language=SQL]
+npm install
+npm start
+\end{lstlisting}
+
+\chapter{Tests et Résultats}
+La phase de test est cruciale pour garantir la fiabilité du système bancaire.
+
+\section{Tests Unitaires (JUnit \& Mockito)}
+Nous avons implémenté des tests unitaires pour valider la logique métier des services. L'usage de Mockito permet d'isoler les composants en simulant les dépendances (Repositories).
+\begin{lstlisting}[language=java, caption=Exemple de test unitaire]
+@Test
+void testTransfer() {
+    // Cas de test pour un virement reussi
+}
+\end{lstlisting}
+
+\section{Tests d'Intégration avec Postman}
+Postman a été utilisé pour valider les endpoints REST. Nous avons créé des collections de tests automatisés pour vérifier :
+\begin{itemize}
+    \item La création de nouveaux clients.
+    \item L'attribution de comptes à un client existant.
+    \item L'exécution de virements avec vérification du solde.
+\end{itemize}
+
+\section{Validation du Parcours Utilisateur}
+L'intégration du frontend avec les microservices a permis de valider des scénarios réels :
+\begin{enumerate}
+    \item \textbf{Connexion :} Authentification et récupération du profil.
+    \item \textbf{Navigation :} Consultation fluide des différents comptes.
+    \item \textbf{Opération :} Réalisation d'un virement et mise à jour instantanée du solde via les WebServices.
+\end{enumerate}
+
+\chapter{Conclusion et Perspectives}
+Ce projet a permis de démontrer la pertinence de l'approche microservices dans le contexte bancaire, en validant la faisabilité technique d'une architecture distribuée, robuste et évolutive. La séparation des responsabilités et l'usage de technologies standards ont facilité le développement et la maintenance de la solution.
+
+L'expérience acquise lors de ce projet souligne l'importance d'une conception rigoureuse (UML) et d'une orchestration efficace (Spring Cloud) pour gérer la complexité inhérente aux systèmes distribués.
+
+\section{Perspectives d'Évolutions}
+Plusieurs axes d'amélioration sont envisagés pour transformer ce prototype en solution de production :
+\begin{itemize}
+    \item \textbf{Sécurité :} Mise en place de Spring Security avec JWT ou OAuth2 via Keycloak.
+    \item \textbf{Conteneurisation :} Utilisation de Docker et Docker-Compose pour simplifier le déploiement multi-services.
+    \item \textbf{Architecture Événementielle :} Introduction d'Apache Kafka pour la gestion asynchrone des transactions et les notifications en temps réel.
+    \item \textbf{Observabilité :} Intégration de Prometheus et Grafana pour le monitoring des services.
+\end{itemize}
+
+\begin{thebibliography}{9}
+\bibitem{knuthwebsite} 
+Spring Cloud Documentation. 
+\\\texttt{https://spring.io/projects/spring-cloud}
+
+\bibitem{react} 
+React Official Documentation. 
+\\\texttt{https://reactjs.org}
+\end{thebibliography}
+
+\end{document}
